@@ -32,7 +32,8 @@ public class Test {
 		//Montage_workflow w = new Montage_workflow();
 		//MR w = new MR();
 		//Dummy_Workflow w = new Dummy_Workflow();
-		DisKMeansWorkflow w = new DisKMeansWorkflow();
+		//DisKMeansWorkflow w = new DisKMeansWorkflow();
+		DecisionTreeWorkflow w = new DecisionTreeWorkflow();
 		// di san ci 
 		//Diagnosis w = new Diagnosis();
 		//DummyWorkflow w = new DummyWorkflow();
