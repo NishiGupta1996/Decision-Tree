@@ -1,0 +1,105 @@
+import java.util.*;
+import dataview.models.*;
+
+
+
+public class PreprocessDecTree extends Task {
+	private static int numOfRows;
+	private static int numOfColumns;
+	private static double max;
+	private static double min;
+	public PreprocessDecTree() // constructor
+	{
+		super("PreprocessDecTree", "Preprocess decision tree");
+		ins = new InputPort[1]; // input port
+		outs = new OutputPort[1]; // output port
+		// define constructor on I/P port
+		ins[0] = new InputPort("in0", Port.DATAVIEW_MathMatrix,  "this is the input file which has no cluster number."); 
+		// define constructor for o/p port
+		outs[0] = new OutputPort("out0", Port.DATAVIEW_MathMatrix, "this is the output file which has cluster numbers, starting from 0 at the beginning");
+		
+	}
+	public static ArrayList<DATAVIEW_MathMatrix> normalizeByContinuousColumn(Integer colID,
+			DATAVIEW_MathVector columnVector, DATAVIEW_MathMatrix data) {
+		ArrayList<DATAVIEW_MathMatrix> normalize = new ArrayList<DATAVIEW_MathMatrix>();
+		double columnMin = min(columnVector.getAll());
+		double columnMax = max(columnVector.getAll());
+		
+
+		for (int i = 1; i < data.getNumOfRows(); i++) {
+			if (data.get(i, colID) < columnMean) {
+			
+		}
+		
+		return normalize;
+	}
+
+	
+
+	
+	public void run() {
+		
+		//Step -1: Read the input data file		
+		DATAVIEW_MathMatrix inputMatrix = new DATAVIEW_MathMatrix();		
+		inputMatrix = (DATAVIEW_MathMatrix) ins[0].read();
+	 
+		numOfRows = inputMatrix.getNumOfRows();
+		numOfColumns = inputMatrix.getNumOfColumns();
+		
+		// step-2 normalize each continus column
+		// check in 1st row datatype if 0 continus: normalize that column
+		DATAVIEW_MathMatrix data;
+		/*for (int i= 0 ; i<numOfColumns; i++) {
+			if (inputMatrix.get(0,i)==0 ) {
+				double max = 0;  // max value of column
+				double min =0;   //min value
+				for(int j=1; j< numOfRows; j++ ) {
+			      	 if (data.get(i, j)> max) {
+							 max = data.get(i,j);
+						 }
+			      	 else if (data.get(i, j)< min) {
+						 min = data.get(i,j);
+					 }
+				}
+				//Normalize the column
+				double a=0;
+		      	double b=1;
+		      	double out;
+				for(int j=1; j< numOfRows; j++ ) {  	 
+					out= (a+(data.get(i,j)- min)(b-a))/(max-min);
+				// create function of array list or direct here
+				}}*/
+			
+		
+		//Trial step 2
+		DATAVIEW_MathVector columnVector;
+		for (int i = 0; i < numOfColumns - 2; i++) {
+			// todo: add getColumns in matrix class to get whole value in column as vector
+			columnVector = inputMatrix.getColumn(i);
+			// check if column i is continuous or categorical
+			boolean iscontinuous = columnVector.get(0) == 0 ? true : false;
+			if (iscontinuous == true) {
+				if (inputMatrix.get(0,i)==0 ) {
+					double max = 0;  // max value of column
+					double min =0;   //min value
+					for(int j=1; j< numOfRows; j++ ) {
+				      	 if (data.get(i, j)> max) {
+								 max = data.get(i,j);
+							 }
+				ArrayList<DATAVIEW_MathMatrix> normalize = normalizeByContinuousColumn(i,
+						columnVector, data);
+				
+			
+
+		
+		
+			}
+		
+		// step-3 write output data : matrix obj
+		for (int k = 0; k < outs.length; k++)
+			outs[k].write(output[k]); 
+		
+		
+	}
+	
+}}}
