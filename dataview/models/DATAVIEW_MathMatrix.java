@@ -88,6 +88,25 @@ public class DATAVIEW_MathMatrix {
 		return new DATAVIEW_MathVector(column);
 	}
 
+	public void removeColumn(int k) {
+		double[][] newElements = new double[m][n - 1];
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				if (k == j) {
+					continue;
+				} else {
+					if (k < j) {
+						newElements[i][j - 1] = elements[i][j];
+					} else {
+						newElements[i][j] = elements[i][j];
+					}
+				}
+
+			}
+		}
+		this.elements = newElements;
+	}
+
 	public void set(int i, int j, double val) {
 		elements[i][j] = val;
 	}
@@ -109,6 +128,30 @@ public class DATAVIEW_MathMatrix {
 		}
 		for (int i = 0; i < n; i++)
 			this.elements[m][i] = newvt.get(i);
+	}
+
+	public int getN() {
+		return n;
+	}
+
+	public void setN(int n) {
+		this.n = n;
+	}
+
+	public int getM() {
+		return m;
+	}
+
+	public void setM(int m) {
+		this.m = m;
+	}
+
+	public double[][] getElements() {
+		return elements;
+	}
+
+	public void setElements(double[][] elements) {
+		this.elements = elements;
 	}
 
 	public void add(double newv) {

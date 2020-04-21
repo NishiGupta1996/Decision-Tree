@@ -1,3 +1,10 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -5,6 +12,7 @@ import java.util.List;
 
 import dataview.models.DATAVIEW_MathMatrix;
 import dataview.models.DATAVIEW_MathVector;
+import dataview.models.Dataview;
 import dataview.models.InputPort;
 import dataview.models.OutputPort;
 import dataview.models.Port;
@@ -22,10 +30,11 @@ public class TrainDecisionTree extends Task {
 		ins = new InputPort[1];
 		// ins = new InputPort[2];
 		outs = new OutputPort[1];
-		ins[0] = new InputPort("in0", Port.DATAVIEW_MathMatrix,
-				"This contains the training dataset to train a decision tree model");
+		// ins[0] = new InputPort("in0", Port.DATAVIEW_MathMatrix, "This contains the
+		// training dataset to train a decision tree model");
 		// ins[1] = new InputPort("in1", Port.DATAVIEW_MathVector, "This contains
 		// dimension of input matrix");
+		ins[0] = new InputPort("in0", Port.DATAVIEW_BigFile, "This is the input matrix");
 		outs[0] = new OutputPort("out0", Port.DATAVIEW_HashMap, "This will output the tree structure");
 	}
 
@@ -123,9 +132,42 @@ public class TrainDecisionTree extends Task {
 //		inputVector = (DATAVIEW_MathVector) ins[1].read();
 //		numOfRows = (int) inputVector.get(0);
 //		numOfColumns = (int) inputVector.get(1);
-		// read matrix from input port 2
+
+		// read matrix from input port 1
 		DATAVIEW_MathMatrix inputMatrix = new DATAVIEW_MathMatrix();
-		inputMatrix = (DATAVIEW_MathMatrix) ins[0].read();
+		// inputMatrix = (DATAVIEW_MathMatrix) ins[0].read();
+
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader((String) ins[0].getFileName()));
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			Dataview.debugger.logException(e1);
+		}
+
+		String line = null;
+		int rowNum = 0;
+		int colNum = 10;
+		inputMatrix.setM(rowNum);
+		inputMatrix.setN(colNum);
+		inputMatrix.setElements(new double[rowNum][colNum]);
+		try {
+			while ((line = br.readLine()) != null) {
+				System.out.println("line:" + line);
+				double[] rowVal = Arrays.stream(line.split(",")).mapToDouble(Double::parseDouble).toArray();
+				DATAVIEW_MathVector newvec = new DATAVIEW_MathVector(rowVal);
+				rowNum++;
+				inputMatrix.setM(rowNum);
+				double tempMatrix[][];
+				inputMatrix.addNewRow(newvec);
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} // end while
+
+		// run the
 		numOfRows = inputMatrix.getNumOfRows();
 		numOfColumns = inputMatrix.getNumOfColumns();
 		boolean isEnd = false;
@@ -149,9 +191,9 @@ public class TrainDecisionTree extends Task {
 				double bestInfoGain = 0;
 				isEnd = true;
 				boolean stopSplit = false;
-				int bestSplit;
+				int bestSplit = 0;
 				String splitCriteria;
-				String bestColSplitCriteria;
+				String bestColSplitCriteria = null;
 				DATAVIEW_MathVector columnVector;
 				double currentEntropy;
 				ArrayList<DATAVIEW_MathMatrix> tempdata = new ArrayList<DATAVIEW_MathMatrix>();
@@ -194,9 +236,6 @@ public class TrainDecisionTree extends Task {
 							bestColSplitCriteria = splitCriteria;
 						}
 
-						// remove the column to avoid it is re-selected in future split
-						data.removeColumn(bestSplit);
-
 						datasetEntropy.put(data, entropy);
 
 					}
@@ -204,6 +243,9 @@ public class TrainDecisionTree extends Task {
 					ArrayList<DATAVIEW_MathMatrix> splitdatasets = splitDatasetsByCatigoricalColumn(bestSplit,
 							columnVector, data);
 					newdatasets.addAll(splitdatasets);
+
+					// remove the column to avoid it is re-selected in future split
+					data.removeColumn(bestSplit);
 
 					// save the splitting rules
 					HashMap<String, String> newrule = new HashMap<String, String>();
@@ -217,6 +259,28 @@ public class TrainDecisionTree extends Task {
 			currentdatasets.clear();
 			currentdatasets = newdatasets;
 
+		}
+
+		// step 3: write to the output
+		File outputfile = new File((String) outs[0].getFileName());
+		try {
+			if (!outputfile.exists())
+				outputfile.createNewFile();
+
+			FileWriter fw = new FileWriter(outputfile.getAbsoluteFile(), false);
+			BufferedWriter bw = new BufferedWriter(fw);
+
+			for (HashMap<String, String> rule : splitRules) {
+				bw.write("splitCol:" + rule.get("splitCol") + ", splitCriteria" + rule.get("splitCriteria"));
+				bw.newLine();
+			}
+
+			bw.close();
+			fw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Dataview.debugger.logException(e);
 		}
 
 	}
