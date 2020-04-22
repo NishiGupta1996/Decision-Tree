@@ -43,16 +43,19 @@ public class TrainDecisionTree extends Task {
 		ArrayList<DATAVIEW_MathMatrix> splitdatasets = new ArrayList<DATAVIEW_MathMatrix>();
 		double columnMean = mean(columnVector.getAll());
 		continuousRule = columnMean;
-		DATAVIEW_MathMatrix data1 = new DATAVIEW_MathMatrix();
-		DATAVIEW_MathMatrix data2 = new DATAVIEW_MathMatrix();
+		ArrayList<DATAVIEW_MathVector> tempdata1 = new ArrayList<DATAVIEW_MathVector>();
+		ArrayList<DATAVIEW_MathVector> tempdata2 = new ArrayList<DATAVIEW_MathVector>();
 
 		for (int i = 1; i < data.getNumOfRows(); i++) {
 			if (data.get(i, colID) < columnMean) {
-				data1.addNewRow(data.getRow(i));
+				tempdata1.add(data.getRow(i));
 			} else {
-				data2.addNewRow(data.getRow(i));
+				tempdata2.add(data.getRow(i));
 			}
 		}
+		DATAVIEW_MathMatrix data1;
+		DATAVIEW_MathMatrix data2;
+		for
 		splitdatasets.add(data1);
 		splitdatasets.add(data2);
 		return splitdatasets;
@@ -61,7 +64,12 @@ public class TrainDecisionTree extends Task {
 	public static ArrayList<DATAVIEW_MathMatrix> splitDatasetsByCatigoricalColumn(Integer colID,
 			DATAVIEW_MathVector columnVector, DATAVIEW_MathMatrix data) {
 		ArrayList<DATAVIEW_MathMatrix> splitdatasets = new ArrayList<DATAVIEW_MathMatrix>();
-		int[] uniqueV = checkUniqueV(columnVector.getElements());
+		double[] getAll = columnVector.getAll();
+		int[] getAllInt = new int[getAll.length];
+		for (int i = 0; i < getAll.length; i++) {
+			getAllInt[i] = (int) getAll[i];
+		}
+		int[] uniqueV = checkUniqueV(getAllInt);
 		categoricalRule = uniqueV;
 
 		for (int value : uniqueV) {
@@ -88,7 +96,7 @@ public class TrainDecisionTree extends Task {
 			int fClass = 0;
 			int rows = data.getNumOfRows();
 			for (int i = 0; i < rows; i++) {
-				if (data.get(i, numOfColumns) == 1) {
+				if (data.get(i, numOfColumns - 1) == 1) {
 					tClass++;
 				} else {
 					fClass++;
@@ -134,8 +142,6 @@ public class TrainDecisionTree extends Task {
 //		numOfColumns = (int) inputVector.get(1);
 
 		// read matrix from input port 1
-		DATAVIEW_MathMatrix inputMatrix = new DATAVIEW_MathMatrix();
-		// inputMatrix = (DATAVIEW_MathMatrix) ins[0].read();
 
 		BufferedReader br = null;
 		try {
@@ -148,26 +154,35 @@ public class TrainDecisionTree extends Task {
 
 		String line = null;
 		int rowNum = 0;
-		int colNum = 10;
-		inputMatrix.setM(rowNum);
-		inputMatrix.setN(colNum);
-		inputMatrix.setElements(new double[rowNum][colNum]);
+		int colNum = 0;
+		ArrayList<ArrayList<Double>> tempList = new ArrayList<ArrayList<Double>>();
 		try {
 			while ((line = br.readLine()) != null) {
 				System.out.println("line:" + line);
 				double[] rowVal = Arrays.stream(line.split(",")).mapToDouble(Double::parseDouble).toArray();
-				DATAVIEW_MathVector newvec = new DATAVIEW_MathVector(rowVal);
+				ArrayList<Double> newList = new ArrayList<Double>();
+				for (double e : rowVal) {
+					newList.add(e);
+				}
+				tempList.add(newList);
 				rowNum++;
-				inputMatrix.setM(rowNum);
-				double tempMatrix[][];
-				inputMatrix.addNewRow(newvec);
+				colNum = rowVal.length;
 			}
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} // end while
 
-		// run the
+		// create dataview_mathmatrix from templist;
+		DATAVIEW_MathMatrix inputMatrix = new DATAVIEW_MathMatrix(rowNum, colNum);
+		double[][] tempArray = new double[rowNum][colNum];
+		for (int i = 0; i < rowNum; i++) {
+			for (int j = 0; j < colNum; j++) {
+				tempArray[i][j] = tempList.get(i).get(j);
+			}
+		}
+		inputMatrix.setElements(tempArray);
+
 		numOfRows = inputMatrix.getNumOfRows();
 		numOfColumns = inputMatrix.getNumOfColumns();
 		boolean isEnd = false;
@@ -206,7 +221,7 @@ public class TrainDecisionTree extends Task {
 				if (currentEntropy != 1 && stopSplit == false) {
 
 					// loop through all columns
-					for (int i = 0; i < numOfColumns - 2; i++) {
+					for (int i = 0; i < numOfColumns - 1; i++) {
 						// todo: add getColumns in matrix class to get whole value in column as vector
 						columnVector = inputMatrix.getColumn(i);
 						// check if column i is continuous or categorical

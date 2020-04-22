@@ -45,7 +45,7 @@ public class DATAVIEW_MathVector {
 		elements[i] = v;
 	}
 
-	public double[] getAll(int i) {
+	public double[] getAll() {
 		double[] allVal = null;
 		allVal = this.elements;
 		return allVal;

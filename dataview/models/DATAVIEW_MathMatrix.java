@@ -81,9 +81,9 @@ public class DATAVIEW_MathMatrix {
 	}
 
 	public DATAVIEW_MathVector getColumn(int j) {
-		double[] column = new double[n];
+		double[] column = new double[m];
 		for (int i = 0; i < m; i++) {
-			column[i] = elements[j][i];
+			column[i] = elements[i][j];
 		}
 		return new DATAVIEW_MathVector(column);
 	}
