@@ -26,8 +26,8 @@ public class Test {
 		// MR w = new MR();
 		// Dummy_Workflow w = new Dummy_Workflow();
 		// DisKMeansWorkflow w = new DisKMeansWorkflow();
-		// DecisionTreeWorkflow w = new DecisionTreeWorkflow();
-		WordCount_workflow w = new WordCount_workflow();
+		DecisionTreeWorkflow w = new DecisionTreeWorkflow();
+		// WordCount_workflow w = new WordCount_workflow();
 		// di san ci
 		// Diagnosis w = new Diagnosis();
 		// DummyWorkflow w = new DummyWorkflow();

@@ -191,11 +191,6 @@ public class TrainDecisionTree extends Task {
 	public void run() {
 
 		// read the input
-		// read dimension of matrix from input port 1
-//		DATAVIEW_MathVector inputVector = new DATAVIEW_MathVector(2);
-//		inputVector = (DATAVIEW_MathVector) ins[1].read();
-//		numOfRows = (int) inputVector.get(0);
-//		numOfColumns = (int) inputVector.get(1);
 
 		// read matrix from input port 1
 

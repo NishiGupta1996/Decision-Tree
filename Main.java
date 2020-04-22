@@ -4,7 +4,7 @@ import dataview.models.Dataview;
 
 public class Main {
 
-	public static void main1(String[] args) {
+	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		String configurefileLocation = System.getProperty("user.dir") + File.separator + "WebContent" + File.separator
 				+ "workflowTaskDir" + File.separator;
@@ -16,7 +16,7 @@ public class Main {
 
 	}
 
-	public static void main(String[] args) {
+	public static void main1(String[] args) {
 		// TODO Auto-generated method stub
 		String configurefileLocation = System.getProperty("user.dir") + File.separator + "WebContent" + File.separator
 				+ "workflowTaskDir" + File.separator;
