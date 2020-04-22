@@ -8,20 +8,15 @@ import dataview.models.*;
 public class PreprocessDecTree extends Task {
 	private static int numOfRows;
 	private static int numOfColumns;
-	//private static double max;
-	//private static double min;
-	public PreprocessDecTree() // constructor
+	public PreprocessDecTree() 
 	{
 		super("PreprocessDecTree", "Preprocess decision tree");
-		ins = new InputPort[1]; // input port
-		outs = new OutputPort[1]; // output port
-		// define constructor on I/P port
+		ins = new InputPort[1]; 
+		outs = new OutputPort[1]; 
 		ins[0] = new InputPort("in0", Port.DATAVIEW_BigFile,  "this is the input file which has no cluster number."); 
-		// define constructor for o/p port
 		outs[0] = new OutputPort("out0", Port.DATAVIEW_MathMatrix, "this is the output file which has cluster numbers, starting from 0 at the beginning");
 		
 	}
-
 	public void run() {
 		
 		//Step -1: Read the input data file		
@@ -33,7 +28,6 @@ public class PreprocessDecTree extends Task {
 			e1.printStackTrace();
 			Dataview.debugger.logException(e1);
 		}
-
 		String line = null;
 		int rowNum = 0;
 		int colNum = 0;
@@ -69,9 +63,8 @@ public class PreprocessDecTree extends Task {
 		numOfColumns = inputMatrix.getNumOfColumns();
 		
 		// step-2 normalize each continus column
-		DATAVIEW_MathMatrix data=null;
 		DATAVIEW_MathVector columnVector;
-		ArrayList<ArrayList<Double>> NormalizedColumns = new ArrayList<ArrayList<Double>>();
+			
 		for (int i = 0; i < numOfColumns - 1; i++) {
 			// todo: add getColumns in matrix class to get whole value in column as vector
 			columnVector = inputMatrix.getColumn(i);
@@ -80,59 +73,30 @@ public class PreprocessDecTree extends Task {
 			if (iscontinuous == true) {
 				//find min & max
 					double max = 0;  // max value of column
-					double min =0;   //min value
+					double min =50;   //min value
 					for(int j=1; j< numOfRows; j++ ) {
-				      	 if (data.get(i, j)> max) {
-								max = data.get(i,j);	
+				      	 if (inputMatrix.get(j,i)> max) {
+								max = inputMatrix.get(j,i);	
 							 }
 				   
-				      	 if (data.get(i, j)< min) {
-								min = data.get(i,j);
+				      	 if (inputMatrix.get(j,i)< min) {
+								min = inputMatrix.get(j,i);
 						}
 					}
-			
-					//min and max value available
-					ArrayList<Double> templist = new ArrayList<Double>();
-					for(double e: columnVector.getAll()) {
-						//apply the formula 
-						 e = (e - min)/(max-min);
 					
-						//save the value in new array
-						 templist.add(e);
-						// Vector <Double> preprocess = new Vector<Double>();
-						// preprocess.toArray();
-						
-					}
-					NormalizedColumns.add(templist);
-					//add this array as new column in new dtaview matrix
-					//ArrayList <DATAVIEW_MathMatrix> preadd = new ArrayList<DATAVIEW_MathMatrix>();
+			//step-3 normalization
+			inputMatrix.subtractColumn(i, min);
+			inputMatrix.divColumn(i, max-min);
 		 }
+			
 			else {
 				
 				continue;
 			}
 		}
-		//here we should get a list of normalized vectors
-		//count dim of the normalized vectors
-		int colDim = NormalizedColumns.size();
-		int rowDim = NormalizedColumns.size();
-		DATAVIEW_MathMatrix newdata = new DATAVIEW_MathMatrix(rowDim, colDim);
-		//write a loop to add vector to columns
-		//put first list to the first column, and so on
-	//	newvalue=
-		for(int i =0; i<rowDim; i++) {
-	     for(int j=0; j<colDim; j++)	{
-	  //  	 newdata.add(i, j, newvalue);
-	    	 
-	     }
-	     }
-		newdata.get(rowDim, colDim);
-	    		 
+			    		 
 	    // step-3 write output data : matrix obj
-	 	// outs[0]= DATAVIEW_MathMatrix();	
-	 	outs[0].write(newdata);
-          	    		 
-	    		 
-		
-}
-}
+	 	// outs[0]= DATAVIEW_MathMatrix();	*/
+	 	outs[0].write(inputMatrix);		 
+	}
+	}
