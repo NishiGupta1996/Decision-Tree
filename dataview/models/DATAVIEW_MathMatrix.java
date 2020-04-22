@@ -14,9 +14,6 @@ public class DATAVIEW_MathMatrix {
 	private int m; // number of rows, the number of examples
 	private double[][] elements; // vector's elements
 
-	public DATAVIEW_MathMatrix() {
-	}
-
 	public DATAVIEW_MathMatrix(int m, int n) {
 		this.m = m;
 		this.n = n;
@@ -86,25 +83,6 @@ public class DATAVIEW_MathMatrix {
 			column[i] = elements[i][j];
 		}
 		return new DATAVIEW_MathVector(column);
-	}
-
-	public void removeColumn(int k) {
-		double[][] newElements = new double[m][n - 1];
-		for (int i = 0; i < m; i++) {
-			for (int j = 0; j < n; j++) {
-				if (k == j) {
-					continue;
-				} else {
-					if (k < j) {
-						newElements[i][j - 1] = elements[i][j];
-					} else {
-						newElements[i][j] = elements[i][j];
-					}
-				}
-
-			}
-		}
-		this.elements = newElements;
 	}
 
 	public void set(int i, int j, double val) {

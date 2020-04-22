@@ -46,16 +46,30 @@ public class TrainDecisionTree extends Task {
 		ArrayList<DATAVIEW_MathVector> tempdata1 = new ArrayList<DATAVIEW_MathVector>();
 		ArrayList<DATAVIEW_MathVector> tempdata2 = new ArrayList<DATAVIEW_MathVector>();
 
+		int data1RowDim = 0;
+		int data2RowDim = 0;
+		int dataColDim = data.getRow(0).length();
 		for (int i = 1; i < data.getNumOfRows(); i++) {
 			if (data.get(i, colID) < columnMean) {
 				tempdata1.add(data.getRow(i));
+				data1RowDim++;
 			} else {
 				tempdata2.add(data.getRow(i));
+				data2RowDim++;
 			}
 		}
-		DATAVIEW_MathMatrix data1;
-		DATAVIEW_MathMatrix data2;
-		for
+		DATAVIEW_MathMatrix data1 = new DATAVIEW_MathMatrix(data1RowDim, dataColDim);
+		DATAVIEW_MathMatrix data2 = new DATAVIEW_MathMatrix(data2RowDim, dataColDim);
+		int rowId = 0;
+		for (DATAVIEW_MathVector v : tempdata1) {
+			data1.addRow(rowId, v);
+			rowId++;
+		}
+		rowId = 0;
+		for (DATAVIEW_MathVector v : tempdata2) {
+			data2.addRow(rowId, v);
+			rowId++;
+		}
 		splitdatasets.add(data1);
 		splitdatasets.add(data2);
 		return splitdatasets;
@@ -71,13 +85,22 @@ public class TrainDecisionTree extends Task {
 		}
 		int[] uniqueV = checkUniqueV(getAllInt);
 		categoricalRule = uniqueV;
+		int dataColDim = data.getRow(0).length();
 
 		for (int value : uniqueV) {
-			DATAVIEW_MathMatrix data1 = new DATAVIEW_MathMatrix();
+			ArrayList<DATAVIEW_MathVector> tempdata1 = new ArrayList<DATAVIEW_MathVector>();
+			int data1RowDim = 0;
 			for (int i = 1; i < data.getNumOfRows(); i++) {
 				if (data.get(i, colID) == value) {
-					data1.addNewRow(data.getRow(i));
+					tempdata1.add(data.getRow(i));
+					data1RowDim++;
 				}
+			}
+			DATAVIEW_MathMatrix data1 = new DATAVIEW_MathMatrix(data1RowDim, dataColDim);
+			int rowId = 0;
+			for (DATAVIEW_MathVector v : tempdata1) {
+				data1.addRow(rowId, v);
+				rowId++;
 			}
 			splitdatasets.add(data1);
 		}
@@ -102,8 +125,17 @@ public class TrainDecisionTree extends Task {
 					fClass++;
 				}
 			}
-			subentropy.add(-(tClass / rows) * Math.log(tClass / rows) - (fClass / rows) * Math.log(fClass / rows));
-			subsize.add(rows);
+			// System.out.println(((double) tClass / rows) * Math.log((double) tClass /
+			// rows));
+			if (tClass != 0 && fClass != 0) {
+				subentropy.add(-((double) tClass / rows) * Math.log((double) tClass / rows)
+						- ((double) fClass / rows) * Math.log((double) fClass / rows));
+				subsize.add(rows);
+			} else {
+				subentropy.add(1.0);
+				subsize.add(rows);
+			}
+
 		}
 
 		for (Integer e : subsize) {
@@ -111,7 +143,7 @@ public class TrainDecisionTree extends Task {
 		}
 
 		for (int i = 0; i < subentropy.size(); i++) {
-			entropy += (subsize.get(i) / totalrows) * subentropy.get(i);
+			entropy += ((double) subsize.get(i) / totalrows) * subentropy.get(i);
 		}
 
 		return entropy;
@@ -130,6 +162,30 @@ public class TrainDecisionTree extends Task {
 		unique = Arrays.stream(m).distinct().toArray();
 
 		return unique;
+	}
+
+	public DATAVIEW_MathMatrix removeColumn(int k, DATAVIEW_MathMatrix data) {
+		int rowDim = data.getNumOfRows();
+		int colDim = data.getNumOfColumns();
+
+		double[][] newElements = new double[rowDim][colDim - 1];
+		for (int i = 0; i < data.getNumOfRows(); i++) {
+			for (int j = 0; j < data.getNumOfColumns(); j++) {
+				if (k == j) {
+					continue;
+				} else {
+					if (k < j) {
+						newElements[i][j - 1] = data.get(i, j);
+					} else {
+						newElements[i][j] = data.get(i, j);
+					}
+				}
+
+			}
+		}
+		DATAVIEW_MathMatrix newMatrix = new DATAVIEW_MathMatrix(newElements);
+
+		return newMatrix;
 	}
 
 	public void run() {
@@ -191,7 +247,6 @@ public class TrainDecisionTree extends Task {
 		// DATAVIEW_MathVector columnsType = inputMatrix.getRow(0);
 		int[] uniqueVal;
 		ArrayList<DATAVIEW_MathMatrix> currentdatasets = new ArrayList<DATAVIEW_MathMatrix>();
-		ArrayList<DATAVIEW_MathMatrix> newdatasets = new ArrayList<DATAVIEW_MathMatrix>();
 		currentdatasets.add(inputMatrix);
 		HashMap<DATAVIEW_MathMatrix, Double> datasetEntropy = new HashMap<DATAVIEW_MathMatrix, Double>();
 		// save the split strategy
@@ -200,7 +255,9 @@ public class TrainDecisionTree extends Task {
 		// recursively partition dataset, save dataset in each level in a ArrayList
 		while (!isEnd) {
 			// for each dataset in current level
-			newdatasets.clear();
+			level++;
+			System.out.println("current level is: level " + level);
+			ArrayList<DATAVIEW_MathMatrix> newdatasets = new ArrayList<DATAVIEW_MathMatrix>();
 
 			for (DATAVIEW_MathMatrix data : currentdatasets) {
 				double bestInfoGain = 0;
@@ -220,15 +277,15 @@ public class TrainDecisionTree extends Task {
 
 				if (currentEntropy != 1 && stopSplit == false) {
 
+					isEnd = false;
 					// loop through all columns
 					for (int i = 0; i < numOfColumns - 1; i++) {
 						// todo: add getColumns in matrix class to get whole value in column as vector
 						columnVector = inputMatrix.getColumn(i);
 						// check if column i is continuous or categorical
-						boolean iscontinuous = columnVector.get(0) == 0 ? true : false;
+						Boolean iscontinuous = columnVector.get(0) == 0 ? true : false;
 						double entropy;
 						double infoGain;
-						isEnd = false;
 
 						if (iscontinuous == true) {
 							ArrayList<DATAVIEW_MathMatrix> splitdatasets = splitDatasetsByContinuousColumn(i,
@@ -255,23 +312,30 @@ public class TrainDecisionTree extends Task {
 
 					}
 					columnVector = inputMatrix.getColumn(bestSplit);
-					ArrayList<DATAVIEW_MathMatrix> splitdatasets = splitDatasetsByCatigoricalColumn(bestSplit,
-							columnVector, data);
-					newdatasets.addAll(splitdatasets);
+					Boolean iscontinuous = columnVector.get(0) == 0 ? true : false;
+					if (iscontinuous == true) {
+						ArrayList<DATAVIEW_MathMatrix> splitdatasets = splitDatasetsByContinuousColumn(bestSplit,
+								columnVector, data);
+						newdatasets.addAll(splitdatasets);
+					} else {
+						ArrayList<DATAVIEW_MathMatrix> splitdatasets = splitDatasetsByCatigoricalColumn(bestSplit,
+								columnVector, data);
+						newdatasets.addAll(splitdatasets);
+					}
 
 					// remove the column to avoid it is re-selected in future split
-					data.removeColumn(bestSplit);
+					data = removeColumn(bestSplit, data);
 
 					// save the splitting rules
 					HashMap<String, String> newrule = new HashMap<String, String>();
 					newrule.put("splitCol", Integer.toString(bestSplit));
+					newrule.put("iscontinuous", Boolean.toString(iscontinuous));
 					newrule.put("splitCriteria", bestColSplitCriteria);
 					splitRules.add(newrule);
 
 				}
 
 			}
-			currentdatasets.clear();
 			currentdatasets = newdatasets;
 
 		}
@@ -286,7 +350,8 @@ public class TrainDecisionTree extends Task {
 			BufferedWriter bw = new BufferedWriter(fw);
 
 			for (HashMap<String, String> rule : splitRules) {
-				bw.write("splitCol:" + rule.get("splitCol") + ", splitCriteria" + rule.get("splitCriteria"));
+				bw.write("splitCol:" + rule.get("splitCol") + ", iscontinuous: " + rule.get("iscontinuous")
+						+ ", splitCriteria: " + rule.get("splitCriteria"));
 				bw.newLine();
 			}
 
